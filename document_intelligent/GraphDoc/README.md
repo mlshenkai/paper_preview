@@ -26,11 +26,11 @@
 #### 1.3.1 文本编码
 由于文档中的文本内容以 2D 结构呈现，因此需要使用布局信息对文本进行编码。在 LayoutLMv2 [10] 之后，我们将所有坐标标准化和离散化为 [0, 512] 范围内的整数，并使用两个嵌入层分别嵌入 x 轴特征和 y 轴特征。给定第 i 个语义区域 bi 的归一化边界框，我们计算表示为 wi 和 hi 的框的宽度和高度,其顶点坐标
 表示为(xiv, yiv),从左上角开始，文本布局特征为左上角坐标、右下角坐标、宽、高等6个特征(xi0, yi0, xi2, yi2, w, h)构造的embedding为布局特征
-则布局特征表示为
-![](https://latex.codecogs.com/svg.image?\bg{white}I_{i}&space;=&space;[Emb_{x}(x_{i0},x_{i2},w_{i});Emb_{y}(y_{i0},y_{i2},h_{i})],&space;0\leq&space;i\leq&space;n{\color{white}})  
+则布局特征表示为  
+![](https://latex.codecogs.com/gif.image?\bg{white}I_{i}&space;=&space;[Emb_{x}(x_{i0},x_{i2},w_{i});Emb_{y}(y_{i0},y_{i2},h_{i})],&space;0\leq&space;i\leq&space;n{\color{white}})  
 其中[;]表示两个特征进行concat  
 而文本编码Si表示为:  
-![](https://latex.codecogs.com/svg.image?\bg{white}S_{i}=Proj(SentenceEmb(t_{i})+I_{i})  
+![](https://latex.codecogs.com/gif.image?\bg{white}S_{i}=Proj(SentenceEmb(t_{i})+I_{i})  
 其中 SentenceEmb使用Sentence-Bert对文本进行编码 S0表示[CLS]
 
 
