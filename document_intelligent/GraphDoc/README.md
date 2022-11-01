@@ -30,10 +30,16 @@
 ![](https://latex.codecogs.com/gif.image?\bg{white}I_{i}&space;=&space;[Emb_{x}(x_{i0},x_{i2},w_{i});Emb_{y}(y_{i0},y_{i2},h_{i})],&space;0\leq&space;i\leq&space;n{\color{white}})  
 其中[;]表示两个特征进行concat  
 而文本编码Si表示为:  
-![](https://latex.codecogs.com/gif.image?\dpi{110}\bg{white}S_{i}=Proj(SentenceEmb(t_{i})&plus;I_{i})  
+<img src="https://latex.codecogs.com/gif.image?\dpi{110}\bg{white}S_{i}=Proj(SentenceEmb(t_{i}))&plus;I_{i}" title="https://latex.codecogs.com/gif.image?\dpi{110}\bg{white}S_{i}=Proj(SentenceEmb(t_{i}))+I_{i}" />  
 其中 SentenceEmb使用Sentence-Bert对文本进行编码 S0表示[CLS]
 
-
+#### 1.3.2 图像编码
+使用带有FPN [444] 的Swin变压器 [22] 作为视觉编码器的主干。首先在PubLayNet [34] 数据集上对主干进行预训练，以使提取的视觉特征更具语义性。将文档图像I的大小调整为512 × 512，然后馈送到视觉主干中，以生成具有四个特征图 {P2，P3，P4，P5} 的特征金字塔，如图4所示。输出P2是来自FPN的特征图，其具有输入图像的1/4大小。之后，根据bi，RoIAlign [21] 从P2中提取每个语义区域的图像特征。视觉嵌入vi的计算方法如下:  
+<img src="https://latex.codecogs.com/gif.image?\dpi{110}\bg{white}V_{i}&space;=&space;Proj(Pool(Backbone(I)))&plus;I_{i}" title="https://latex.codecogs.com/gif.image?\dpi{110}\bg{white}V_{i} = Proj(Pool(Backbone(I)))+I_{i}" />
+#### 1.3.3 门融合层
+以前的大多数预训练模型 [10]，[35] 通过从文本，视觉和布局中收集多模态信息来产生嵌入序列，然后执行变压器网络以建立对不同模态的深度融合。在我们的工作中，我们采用语义上有意义的组件 (例如，文本块，表，图) 作为模型输入。由于每个组件都有其相应的多模态信息，因此我们设计了栅极融合层以显式融合来自每个模态的信息。此外，我们认为文本和图像之间的依赖性可能在图形注意层之间有所不同，这在我们的消融实验中得到了验证。受ResNet [23] 的启发，我们使跨图形注意层可访问的视觉信息充当信息残留连接。栅极融合层的设计如下:
+#### 1.3.4 图注意力层
+观察到文档中的文本块更多地依赖于其周围的上下文是一种强大的归纳偏差但是，以前的预训练模型 [9]，[10]，[11]，[12] 应用变压器在预训练阶段从头开始学习这种偏差。受GAN [27] 和StartTransformer [25] 的启发，我们设计了图形注意层，通过遵循自我注意策略来关注其邻居，从而计算图形中每个节点的隐藏表示。如图5所示，每个节点只关注其邻域节点和一个全局节点，这可以帮助模型从本地和全局两个方面理解文档。
 
 ***
 ## 作者
