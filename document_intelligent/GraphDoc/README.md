@@ -30,7 +30,7 @@
 ![](https://latex.codecogs.com/gif.image?\bg{white}I_{i}&space;=&space;[Emb_{x}(x_{i0},x_{i2},w_{i});Emb_{y}(y_{i0},y_{i2},h_{i})],&space;0\leq&space;i\leq&space;n{\color{white}})  
 其中[;]表示两个特征进行concat  
 而文本编码Si表示为:  
-![](https://latex.codecogs.com/gif.image?\bg{white}S_{i}=Proj(SentenceEmb(t_{i})+I_{i})  
+![](https://latex.codecogs.com/gif.image?\dpi{110}\bg{white}S_{i}=Proj(SentenceEmb(t_{i})&plus;I_{i})  
 其中 SentenceEmb使用Sentence-Bert对文本进行编码 S0表示[CLS]
 
 
