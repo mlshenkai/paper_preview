@@ -3,62 +3,52 @@
 # @Created Time: 2022/11/1 2:44 PM
 # @File: load_config
 # @Email: mlshenkai@163.com
-from typing import Any
-
 import yaml
 
 
 class Config:
-    def __init__(self, param: dict):
-        for k, v in param.items():
-            setattr(self, k, v)
-
-    def __getattr__(self, item):
-        return None
-
-    # def __add__(self, other):
-    #     if isinstance(other, Config):
-    #         for other.__dict__
-
-
-class ConfigJson:
-    def __init__(self, config_path: [str, dict]):
-        if isinstance(config_path, str):
-            config = self.load_config(config_path)
+    def __init__(self, config, namespace: str = None):
+        if isinstance(config, str):
+            config_dict = self._load(config)
+        elif isinstance(config, dict):
+            config_dict = config
         else:
-            config = config_path
-        self.cfg_json = config
-        self.cfg = self.to_obj()
+            raise TypeError("config 必须是yaml文件或者dict")
+        if namespace is not None:
+            config_dict = {namespace: config_dict}
+        self.__dict__.update(config_dict)
+        self._dict = config_dict
+        self._build_attr()
+
+    def _build_attr(self):
+        for key, value in self._dict.items():
+            if isinstance(value, (list, tuple)):
+                setattr(
+                    self, key, [Config(x) if isinstance(x, dict) else x for x in value]
+                )
+            else:
+                setattr(self, key, Config(value) if isinstance(value, dict) else value)
 
     @staticmethod
-    def load_config(fila_path):
+    def _load(config_file_path):
         try:
-            stream = open(fila_path, "r")
+            stream = open(config_file_path, "r")
             data = yaml.load_all(stream, yaml.FullLoader)
-            config = dict()
+            yaml_config = dict()
             for doc in data:
                 for k, v in doc.items():
-                    config[k] = v
-            return config
-        except Exception as e:
-            raise RuntimeError("配置加载出错")
+                    yaml_config[k] = v
+            return yaml_config
+        except FileNotFoundError:
+            raise FileNotFoundError("配置文件未找到...")
 
-    def add_config(self, config: [str, dict]):
-        if isinstance(config, str):
-            new_config = self.load_config(config)
-        else:
-            new_config = config
-        self.cfg_json.update(new_config)
-        self.cfg = self.to_obj()
-
-    def to_obj(self) -> Any:
-        return Config(self.cfg_json)
+    def add(self, other_config):
+        self._dict.update(other_config._dict)
+        self._build_attr()
 
 
-if __name__ == "__main__":
-    config = ConfigJson(
-        "../document_intelligent/layoutmft/layoutlmv2/config/layoutlmv2_config.yaml"
-    )
-    cfg: Config = config.cfg
-    for k, v in cfg.__dict__.items():
-        print(f"{k}={v}")
+# if __name__ == "__main__":
+#     config = Config("./config_sample.yaml","a")
+#     b_config = Config("./config_sample.yaml","b")
+#     config.add(b_config)
+#     print(config)

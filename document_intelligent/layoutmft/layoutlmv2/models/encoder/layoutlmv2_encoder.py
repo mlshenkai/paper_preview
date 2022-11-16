@@ -5,9 +5,11 @@
 # @Email: mlshenkai@163.com
 import torch
 import torch.nn as nn
+from torch.utils import checkpoint as utils_checkpoints
 import torch.nn.functional as F
 from ..layers.layoutlmv2_layer import LayoutLMv2Layer
 from document_intelligent.utils.bucket_utils import relative_position_bucket
+from libs.model.model_outputs import BaseModelOutput
 
 
 class LayoutLMv2Encoder(nn.Module):
@@ -94,8 +96,65 @@ class LayoutLMv2Encoder(nn.Module):
         attention_mask=None,
         head_mask=None,
         output_attentions=False,
+        output_hidden_states=False,
         return_dict=True,
         bbox=None,
         position_ids=None,
     ):
-        pass
+        all_hidden_states = () if output_hidden_states else None
+        all_self_attention = () if output_attentions else None
+        rel_pos = (
+            self._calculate_1d_position_embeddings(hidden_states, position_ids)
+            if self.has_relation_attention_bias
+            else None
+        )
+        rel_2d_pos = (
+            self._calculate_2d_position_embeddings(hidden_states, bbox)
+            if self.has_spatial_attention_bias
+            else None
+        )
+        for i, layer_module in enumerate(self.layer):
+            if output_hidden_states:
+                all_hidden_states = all_hidden_states + (hidden_states,)
+            layer_head_mask = head_mask[i] if head_mask is not None else None
+            if self.gradient_checkpointing and self.training:
+
+                def create_custom_forward(module):
+                    def custom_forward(*inputs):
+                        return module(*inputs, output_attentions)
+
+                    return custom_forward
+
+                layer_outputs = utils_checkpoints.checkpoint(
+                    create_custom_forward(layer_module),
+                    hidden_states,
+                    attention_mask,
+                    layer_head_mask,
+                    rel_pos,
+                    rel_2d_pos,
+                )
+            else:
+                layer_outputs = layer_module(
+                    hidden_states,
+                    attention_mask,
+                    layer_head_mask,
+                    output_attentions,
+                    rel_pos,
+                    rel_2d_pos,
+                )
+            hidden_states = layer_outputs[0]
+            if output_attentions:
+                all_self_attention = all_self_attention + (hidden_states,)
+        if output_hidden_states:
+            all_hidden_states = all_hidden_states + (hidden_states,)
+        if not return_dict:
+            return tuple(
+                v
+                for v in [hidden_states, all_hidden_states, all_self_attention]
+                if v is not None
+            )
+        return BaseModelOutput(
+            last_hidden_state=hidden_states,
+            hidden_states=all_hidden_states,
+            attentions=all_self_attention,
+        )

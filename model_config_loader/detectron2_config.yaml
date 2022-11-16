@@ -1,0 +1,35 @@
+model:
+  mask_on: true
+  pixel_std: [57.375, 57.120, 58.395]
+  backbone:
+    name: "build_resnet_fpn_backbone"
+  fpn:
+    in_features: ["res2", "res3", "res4", "res5"]
+  anchor_generator:
+    sizes: [[32], [64], [128], [256], [512]]
+  rpn:
+    in_features: ["p2", "p3", "p4", "p5", "p6"]
+    pre_nms_topk_train: 2000
+    pre_nms_topk_test: 1000
+    post_nms_topk_train: 1000
+    post_nms_topk_test: 1000
+  roi_heads:
+    name: "StandardROIHeads"
+    num_classes: 5
+    in_features: ["p2", "p3", "p4", "p5"]
+  roi_box_head:
+    name: ["p2", "p3", "p4", "p5"]
+    num_fc: 2
+    pooler_resolution: 14
+  roi_mask_head:
+    name: "MaskRCNNConvUpsampleHead"
+    num_conv: 4
+    pooler_resolution: 7
+  resnets:
+    depth: 101
+    sizes: [[32], [64], [128], [256], [512]]
+    aspect_ration: [[0.5, 1.0, 2.0]]
+    out_features: ["res2", "res3", "res4", "res5"]
+    num_groups: 32
+    width_pre_group: 8,
+    stride_in_1X1: false
