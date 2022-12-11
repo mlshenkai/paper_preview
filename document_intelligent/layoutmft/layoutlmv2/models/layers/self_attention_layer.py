@@ -30,7 +30,7 @@ class SelfAttentionLayer(nn.Module):
             self.key = nn.Linear(config.hidden_size, self.all_head_size)
             self.value = nn.Linear(config.hidden_size, self.all_head_size)
 
-        self.dropout = nn.Dropout(config.attention_probs_dropouts_prob)
+        self.dropout = nn.Dropout(config.attention_prob_dropout_prob)
 
     def transpose_for_scores(self, x):
         """

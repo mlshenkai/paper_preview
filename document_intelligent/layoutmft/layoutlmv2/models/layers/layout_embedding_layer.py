@@ -40,14 +40,14 @@ class LayoutLMv2Embeddings(nn.Module):
 
         self.register_buffer(
             "position_ids",
-            torch.arange(config.max_2d_position_embeddings).expand((-1, 1)),
+            torch.arange(config.max_2d_position_embeddings).expand((1, -1)),
         )
 
     def _cal_spatial_position_embeddings(self, bbox):
         """
         绝对坐标 embedding
         Args:
-            bbox:  (tensor) (B,N, 4)
+            bbox:  (tensor) (B, N, 4)
 
         Returns:
 

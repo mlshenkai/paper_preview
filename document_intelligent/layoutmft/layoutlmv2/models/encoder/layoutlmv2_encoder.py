@@ -23,7 +23,7 @@ class LayoutLMv2Encoder(nn.Module):
         self.has_relation_attention_bias = config.has_relation_attention_bias
         self.has_spatial_attention_bias = config.has_spatial_attention_bias
 
-        if self.has_relative_attention_bias:
+        if self.has_relation_attention_bias:
             self.rel_pos_bins = config.rel_pos_bins
             self.max_rel_pos = config.max_rel_pos
             self.rel_pos_onehot_size = config.rel_pos_bins

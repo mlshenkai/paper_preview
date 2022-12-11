@@ -1,35 +1,36 @@
-model:
-  mask_on: true
-  pixel_std: [57.375, 57.120, 58.395]
-  backbone:
-    name: "build_resnet_fpn_backbone"
-  fpn:
-    in_features: ["res2", "res3", "res4", "res5"]
-  anchor_generator:
-    sizes: [[32], [64], [128], [256], [512]]
-  rpn:
-    in_features: ["p2", "p3", "p4", "p5", "p6"]
-    pre_nms_topk_train: 2000
-    pre_nms_topk_test: 1000
-    post_nms_topk_train: 1000
-    post_nms_topk_test: 1000
-  roi_heads:
-    name: "StandardROIHeads"
-    num_classes: 5
-    in_features: ["p2", "p3", "p4", "p5"]
-  roi_box_head:
-    name: ["p2", "p3", "p4", "p5"]
-    num_fc: 2
-    pooler_resolution: 14
-  roi_mask_head:
-    name: "MaskRCNNConvUpsampleHead"
-    num_conv: 4
-    pooler_resolution: 7
-  resnets:
-    depth: 101
-    sizes: [[32], [64], [128], [256], [512]]
-    aspect_ration: [[0.5, 1.0, 2.0]]
-    out_features: ["res2", "res3", "res4", "res5"]
-    num_groups: 32
-    width_pre_group: 8,
-    stride_in_1X1: false
+MODEL:
+  MASK_ON: true
+  PIXEL_STD: [57.375, 57.120, 58.395]
+  BACKBONE:
+    NAME: "build_resnet_fpn_backbone"
+  FPN:
+    IN_FEATURES: ["res2", "res3", "res4", "res5"]
+  ANCHOR_GENERATOR:
+    SIZES: [[32], [64], [128], [256], [512]]
+  RPN:
+    IN_FEATURES: ["p2", "p3", "p4", "p5", "p6"]
+    PRE_NMS_TOPK_TRAIN: 2000
+    PRE_NMS_TOPK_TEST: 1000
+    POST_NMS_TOPK_TRAIN: 1000
+    POST_NMS_TOPK_TEST: 1000
+  ROI_HEADS:
+    NAME: "StandardROIHeads"
+    NUM_CLASSES: 5
+    IN_FEATURES: ["p2", "p3", "p4", "p5"]
+  ROI_BOX_HEAD:
+    NAME: "FastRCNNConvFCHead"
+    NUM_FC: 2
+    POOLER_RESOLUTION: 14
+  ROI_MASK_HEAD:
+    NAME: "MaskRCNNConvUpsampleHead"
+    NUM_CONV: 4
+    POOLER_RESOLUTION: 7
+  RESNETS:
+    DEPTH: 101
+    SIZES: [[32], [64], [128], [256], [512]]
+    ASPECT_RATION: [[0.5, 1.0, 2.0]]
+    OUT_FEATURES: ["res2", "res3", "res4", "res5"]
+    NUM_GROUPS: 32
+    WIDTH_PRE_GROUP: 8,
+    STRIDE_IN_1X1: false
+  DEVICE: "cpu"

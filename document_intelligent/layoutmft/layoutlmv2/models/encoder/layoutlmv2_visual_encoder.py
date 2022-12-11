@@ -13,32 +13,27 @@ from detectron2.utils.registry import Registry
 from libs.utils.import_utils import is_detectron2_available
 from libs.utils.sync_batchnorm_utils import my_convert_sync_batchnorm
 import torch.distributed
-
-META_ARCH_REGISTRY = Registry("META_ARCH")
-META_ARCH_REGISTRY.__doc__ = """
-Registry for meta-architectures, i.e. the whole model.
-
-The registered object will be called with `obj(cfg)`
-and expected to return a `nn.Module` object.
-"""
+from detectron2.modeling import META_ARCH_REGISTRY
 
 
 class LayoutLMv2VisualEncoder(nn.Module):
-    def __init__(self, config):
+    def __init__(self, visual_config, model_config):
         super(LayoutLMv2VisualEncoder, self).__init__()
-        self.config = config.get_detectron2_config()
+        cfg = detectron2.config.get_cfg()
+        cfg = visual_config.update_detectron_config(cfg)
+        self.config = cfg
         model = self.build_model(self.config)
-        assert isinstance(model, detectron2.modeling.backbone.FPN)
+        assert isinstance(model.backbone, detectron2.modeling.backbone.FPN)
         self.backbone = model.backbone
-        assert len(self.config.model.pixel_mean) == len(self.config.model.pixel_std)
-        num_channels = len(self.config.model.pixel_mean)
+        assert len(self.config.MODEL.PIXEL_MEAN) == len(self.config.MODEL.PIXEL_STD)
+        num_channels = len(self.config.MODEL.PIXEL_MEAN)
         self.register_buffer(
             "pixel_mean",
-            torch.Tensor(self.config.model.pixel_mean).view(num_channels, 1, 1),
+            torch.Tensor(self.config.MODEL.PIXEL_MEAN).view(num_channels, 1, 1),
         )
         self.register_buffer(
             "pixel_std",
-            torch.Tensor(self.config.model.pixel_std).view(num_channels, 1, 1),
+            torch.Tensor(self.config.MODEL.PIXEL_STD).view(num_channels, 1, 1),
         )
         self.out_feature_key = "p2"
         if torch.are_deterministic_algorithms_enabled():
@@ -49,30 +44,30 @@ class LayoutLMv2VisualEncoder(nn.Module):
                 kernel_size=(
                     math.ceil(
                         math.ceil(input_shape[0] / backbone_stride)
-                        / config.image_feature_pool_shape[0]
+                        / model_config.image_feature_pool_shape[0]
                     ),
                     math.ceil(
                         math.ceil(input_shape[1] / backbone_stride)
-                        / config.image_feature_pool_shape[1]
+                        / model_config.image_feature_pool_shape[1]
                     ),
                 )
             )
         else:
-            self.pool = nn.AdaptiveAvgPool2d(config.image_feature_pool_shape[:2])
-        if len(config.image_feature_pool_shape) == 2:
-            config.image_feature_pool_shape.append(
+            self.pool = nn.AdaptiveAvgPool2d(model_config.image_feature_pool_shape[:2])
+        if len(model_config.image_feature_pool_shape) == 2:
+            model_config.image_feature_pool_shape.append(
                 self.backbone.output_shape()[self.out_feature_key].channels
             )
         assert (
             self.backbone.output_shape()[self.out_feature_key].channels
-            == config.image_feature_pool_shape[2]
+            == model_config.image_feature_pool_shape[2]
         )
 
     @staticmethod
     def build_model(cfg):
-        meta_arch = cfg.model.meta_architecture
+        meta_arch = cfg.MODEL.META_ARCHITECTURE
         model = META_ARCH_REGISTRY.get(meta_arch)(cfg)
-        model.to(torch.device(cfg.model.device))
+        model.to(torch.device(cfg.MODEL.DEVICE))
         return model
 
     def forward(self, images):
