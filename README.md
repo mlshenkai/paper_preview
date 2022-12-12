@@ -5,8 +5,8 @@
 
 
 ## TODO List
-
-- [ ]  [Multimodal Pre-training Based on Graph Attention Network for Document Understanding](document_intelligent/GraphDoc/README.md)
+- [x]  [LayoutLMv2: Multi-modal Pre-training for Visually-Rich Document Understanding](document_intelligent/layoutmft/layoutlmv2/doc/layoutlmv2.md)
+- [ ]  [Multimodal Pre-training Based on Graph Attention Network for Document Understanding](document_intelligent/GraphDoc/doc/graphdoc.md)
 
 
 ## 作者
